@@ -1,0 +1,7 @@
+{
+  "name": "GiocaCrea - Memory & Puzzle Studio",
+  "description": "Crea e gioca con Memory personalizzabili (immagini, icone, testo), puzzle a scorrimento, tessere e giochi di abbinamento. 100% offline, senza server né AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
