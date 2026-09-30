@@ -9,15 +9,24 @@ import {
   Timer,
   CheckCircle2,
   ChevronDown,
+  Plus,
+  Edit2,
+  HelpCircle,
+  Sparkles,
+  Layers,
+  X,
+  ArrowRightLeft,
 } from 'lucide-react';
 import { Deck, MemoryGameCard } from '../types/game';
 import { playSound } from '../utils/sound';
 import { DynamicIcon } from '../utils/iconMap';
+import { QuickCreateMemoryModal } from './QuickCreateMemoryModal';
 
 interface MemoryGameProps {
   decks: Deck[];
   currentDeckId: string;
   onSelectDeck: (deckId: string) => void;
+  onSaveDeck?: (deck: Deck) => void;
   onOpenDeckBuilder: () => void;
   onOpenExportHtml?: () => void;
 }
@@ -26,10 +35,16 @@ export function MemoryGame({
   decks,
   currentDeckId,
   onSelectDeck,
+  onSaveDeck,
   onOpenDeckBuilder,
   onOpenExportHtml,
 }: MemoryGameProps) {
   const currentDeck = decks.find((d) => d.id === currentDeckId) || decks[0];
+
+  // Quick Create / Edit Modal State
+  const [showQuickModal, setShowQuickModal] = useState<boolean>(false);
+  const [quickModalDeck, setQuickModalDeck] = useState<Deck | null>(null);
+  const [showHelpModal, setShowHelpModal] = useState<boolean>(false);
 
   // Game configuration
   const [cardCount, setCardCount] = useState<number>(12); // Total cards on board
@@ -264,13 +279,73 @@ export function MemoryGame({
 
   return (
     <div className="w-full flex flex-col items-center">
+      {/* Creation & Customization Hero Header */}
+      <div className="w-full max-w-4xl mb-4 bg-gradient-to-r from-amber-500/10 via-slate-900 to-slate-900 border border-amber-500/30 rounded-2xl p-4 shadow-xl flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-white">
+                {currentDeck.title}
+              </span>
+              {!currentDeck.isBuiltIn && (
+                <span className="text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono font-semibold">
+                  Mazzo Personalizzato
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              {currentDeck.cards.length} elementi · Generano <strong>{currentDeck.cards.length} coppie</strong> ({currentDeck.cards.length * 2} carte totali)
+            </p>
+          </div>
+        </div>
+
+        {/* Big prominent Creation Buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <button
+            onClick={() => {
+              playSound('click');
+              setQuickModalDeck(null);
+              setShowQuickModal(true);
+            }}
+            className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>+ Crea Nuovo Memory</span>
+          </button>
+
+          <button
+            onClick={() => {
+              playSound('click');
+              setQuickModalDeck(currentDeck);
+              setShowQuickModal(true);
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs rounded-xl transition-all cursor-pointer"
+          >
+            <Edit2 className="w-3.5 h-3.5 text-amber-400" />
+            <span>Modifica Carte</span>
+          </button>
+
+          <button
+            onClick={() => setShowHelpModal(true)}
+            title="Come vengono create le card nel Memory?"
+            className="flex items-center gap-1 px-3 py-2 text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-colors cursor-pointer text-xs"
+          >
+            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden sm:inline">Come Funziona?</span>
+          </button>
+        </div>
+      </div>
+
       {/* Top Controls Bar */}
       <div className="w-full max-w-4xl mb-6 bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Deck selector */}
-          <div className="flex items-center gap-3 w-full md:w-auto">
+          <div className="flex items-center gap-2.5 w-full md:w-auto">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
-              Mazzo:
+              Scegli Mazzo:
             </span>
             <div className="relative w-full md:w-64">
               <select
@@ -280,22 +355,23 @@ export function MemoryGame({
                     onSelectDeck(e.target.value);
                   });
                 }}
-                className="w-full appearance-none bg-slate-800 text-white font-semibold text-sm rounded-xl px-4 py-2.5 pr-10 border border-slate-700 focus:outline-none focus:border-amber-400 transition-colors cursor-pointer truncate"
+                className="w-full appearance-none bg-slate-800 text-white font-semibold text-xs rounded-xl px-3.5 py-2 pr-9 border border-slate-700 focus:outline-none focus:border-amber-400 transition-colors cursor-pointer truncate"
               >
                 {decks.map((deck, idx) => (
                   <option key={`${deck.id}-${idx}`} value={deck.id}>
-                    {deck.title} ({deck.cards.length} carte)
+                    {deck.isBuiltIn ? '🎮' : '⭐'} {deck.title} ({deck.cards.length} coppie)
                   </option>
                 ))}
               </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-3.5 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-2.5 pointer-events-none" />
             </div>
 
             <button
               onClick={onOpenDeckBuilder}
-              className="text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors whitespace-nowrap hidden sm:inline-block cursor-pointer"
+              title="Apri lo studio completo dei mazzi"
+              className="text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors whitespace-nowrap px-2 py-1 rounded hover:bg-slate-800 cursor-pointer"
             >
-              + Personalizza
+              Studio Mazzi ➔
             </button>
           </div>
 
@@ -580,6 +656,96 @@ export function MemoryGame({
                 Gioca di Nuovo
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Quick Create / Edit Memory Modal */}
+      {showQuickModal && onSaveDeck && (
+        <QuickCreateMemoryModal
+          initialDeck={quickModalDeck}
+          onSaveDeck={onSaveDeck}
+          onSelectDeck={(deckId) => {
+            onSelectDeck(deckId);
+            startTransition(() => {
+              initializeGame();
+            });
+          }}
+          onClose={() => setShowQuickModal(false)}
+        />
+      )}
+
+      {/* "Come Funziona il Memory" Explanatory Modal */}
+      {showHelpModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl p-6 max-w-lg w-full shadow-2xl animate-in zoom-in-95 text-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400">
+                  <HelpCircle className="w-4 h-4" />
+                </div>
+                <h3 className="text-base font-bold text-white">
+                  Come vengono create le card nel Memory?
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowHelpModal(false)}
+                className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3.5 text-xs text-slate-300">
+              <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl">
+                <span className="font-bold text-amber-300 block text-sm mb-1">
+                  💡 La Regola Base:
+                </span>
+                Ogni elemento che inserisci (una foto o un'icona) genera automaticamente <strong>UNA COPPIA (2 carte)</strong> nel gioco.
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-amber-400 shrink-0 text-[11px]">
+                    1
+                  </span>
+                  <div>
+                    <strong className="text-white block">Scegli le tue Immagini o Foto:</strong>
+                    Puoi caricare qualsiasi foto dal tuo smartphone o computer (foto di famiglia, animali, disegni dei bambini, oggetti di casa) oppure scegliere icone colorate.
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-amber-400 shrink-0 text-[11px]">
+                    2
+                  </span>
+                  <div>
+                    <strong className="text-white block">Scegli come abbinare le 2 carte:</strong>
+                    <ul className="list-disc pl-4 mt-1 space-y-1 text-slate-400">
+                      <li><strong>Classico:</strong> Le due carte hanno la stessa foto identica.</li>
+                      <li><strong>Educativo (Foto ↔ Parola):</strong> Una carta mostra la foto/icona, mentre la sua coppia mostra il nome scritto (ottimo per imparare l'inglese, leggere o associazioni logiche).</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <span className="w-5 h-5 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center font-bold text-amber-400 shrink-0 text-[11px]">
+                    3
+                  </span>
+                  <div>
+                    <strong className="text-white block">Durante la Partita:</strong>
+                    Tutte le carte vengono coperte e rimescolate. Il giocatore gira 2 carte alla volta: se trova la coppia corretta, le carte rimangono scoperte!
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowHelpModal(false)}
+              className="mt-5 w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl transition-all shadow-md shadow-amber-500/20 cursor-pointer"
+            >
+              Tutto Chiaro, Andiamo a Giocare!
+            </button>
           </div>
         </div>
       )}

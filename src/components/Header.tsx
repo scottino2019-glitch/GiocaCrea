@@ -17,19 +17,19 @@ export function Header({
   onToggleMute,
   onOpenExportHtml,
 }: HeaderProps) {
-  const tabs: { id: ActiveGameTab; label: string }[] = [
-    { id: 'memory', label: 'Memory Game' },
-    { id: 'sliding_puzzle', label: 'Puzzle Scivolo' },
-    { id: 'tile_puzzle', label: 'Puzzle Tessere' },
-    { id: 'match_pairs', label: 'Collega Coppie' },
-    { id: 'deck_builder', label: 'Crea Mazzi' },
+  const tabs: { id: ActiveGameTab; label: string; icon: string }[] = [
+    { id: 'memory', label: 'Memory', icon: '🃏' },
+    { id: 'sliding_puzzle', label: 'Puzzle Scivolo', icon: '🧩' },
+    { id: 'tile_puzzle', label: 'Puzzle Tessere', icon: '🔲' },
+    { id: 'match_pairs', label: 'Collega Coppie', icon: '🔗' },
+    { id: 'deck_builder', label: 'Crea Carte & Mazzi', icon: '🎨' },
   ];
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 md:px-8 py-3.5 transition-colors no-print">
+    <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800 px-4 md:px-8 py-3 transition-colors no-print">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Zone 1: Single text element wordmark */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center text-white shadow-md shadow-amber-500/20">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
@@ -54,13 +54,14 @@ export function Header({
                   playSound('click');
                   onTabChange(tab.id);
                 }}
-                className={`px-3.5 py-1.5 text-xs md:text-sm font-semibold rounded-lg transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 text-xs md:text-sm font-semibold rounded-lg transition-all duration-150 whitespace-nowrap shrink-0 cursor-pointer ${
                   isActive
                     ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/25 font-bold'
                     : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
                 }`}
               >
-                {tab.label}
+                <span>{tab.icon}</span>
+                <span>{tab.label}</span>
               </button>
             );
           })}

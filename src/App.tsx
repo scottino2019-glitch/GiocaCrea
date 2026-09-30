@@ -94,6 +94,7 @@ export default function App() {
             decks={decks}
             currentDeckId={currentDeckId}
             onSelectDeck={setCurrentDeckId}
+            onSaveDeck={handleSaveDeck}
             onOpenDeckBuilder={() => setActiveTab('deck_builder')}
             onOpenExportHtml={() => handleOpenExportForDeck()}
           />

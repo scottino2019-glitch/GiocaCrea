@@ -11,6 +11,7 @@ import {
   Save,
   Check,
   X,
+  Eye,
   Image as ImageIcon,
   FolderOpen,
 } from 'lucide-react';
@@ -249,15 +250,15 @@ export function DeckBuilder({
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <FolderOpen className="w-5 h-5 text-amber-400" />
-            Studio Mazzi Personalizzati
+            Studio di Creazione Carte & Mazzi Memory
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Crea, modifica o duplica i tuoi mazzi con le tue immagini, icone e vocaboli.
+            Crea nuovi mazzi, aggiungi le tue foto personali dal telefono/PC e personalizza i tuoi giochi.
           </p>
         </div>
 
         {/* Global actions: New deck, Import JSON */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <input
             type="file"
             ref={fileInputImportRef}
@@ -278,7 +279,33 @@ export function DeckBuilder({
             className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-slate-950 bg-amber-500 hover:bg-amber-400 rounded-xl transition-all shadow-md shadow-amber-500/20 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
-            <span>Crea Nuovo Mazzo</span>
+            <span>+ Crea Nuovo Mazzo</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Visual Guide: How Cards Work in Memory */}
+      <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shrink-0 mt-0.5">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-white">
+              💡 Come vengono create le carte per il Memory?
+            </h3>
+            <p className="text-xs text-amber-200/90 mt-1 max-w-2xl leading-relaxed">
+              <strong>1 elemento aggiunto = 1 COPPIA (2 carte) nel tavolo di gioco!</strong> Quando aggiungi una carta con una foto o un'icona (es. "Cane"), il gioco genera automaticamente 2 carte coperte da trovare e abbinare durante la partita.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            onClick={() => onPlayDeck(activeDeck.id)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md shadow-amber-500/20 transition-all cursor-pointer"
+          >
+            <Play className="w-4 h-4" />
+            <span>Gioca con questo Mazzo</span>
           </button>
         </div>
       </div>
@@ -700,6 +727,72 @@ export function DeckBuilder({
                     </div>
                   </>
                 )}
+              </div>
+
+              {/* Live 2-Card Memory Preview */}
+              <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl flex flex-col items-center">
+                <span className="text-[11px] font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <Eye className="w-3.5 h-3.5" />
+                  Anteprima delle 2 carte che verranno create nel Memory:
+                </span>
+
+                <div className="flex items-center justify-center gap-3">
+                  {/* Card 1 */}
+                  <div className="w-20 aspect-[3/4] bg-slate-900 border-2 border-amber-500 rounded-lg p-2 flex flex-col items-center justify-between text-center shadow">
+                    <span className="text-[8px] font-bold text-slate-400 uppercase">Carta 1</span>
+                    {editingCard.imageUrl ? (
+                      <img
+                        src={editingCard.imageUrl}
+                        alt={editingCard.label}
+                        className="w-9 h-9 object-cover rounded"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-amber-400">
+                        <DynamicIcon name={editingCard.iconName} className="w-5 h-5" />
+                      </div>
+                    )}
+                    <span className="text-[9px] font-bold text-white line-clamp-1">
+                      {editingCard.label || 'Nome'}
+                    </span>
+                  </div>
+
+                  <div className="text-slate-500 text-xs font-bold">↔</div>
+
+                  {/* Card 2 */}
+                  <div className="w-20 aspect-[3/4] bg-slate-900 border-2 border-amber-500 rounded-lg p-2 flex flex-col items-center justify-between text-center shadow">
+                    <span className="text-[8px] font-bold text-slate-400 uppercase">Carta 2</span>
+                    {activeDeck.matchMode === 'identical' ? (
+                      editingCard.imageUrl ? (
+                        <img
+                          src={editingCard.imageUrl}
+                          alt={editingCard.label}
+                          className="w-9 h-9 object-cover rounded"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-amber-400">
+                          <DynamicIcon name={editingCard.iconName} className="w-5 h-5" />
+                        </div>
+                      )
+                    ) : (
+                      <div className="flex-1 flex flex-col items-center justify-center p-1 text-center">
+                        <span className="text-[10px] font-bold text-amber-300 line-clamp-2">
+                          {editingCard.secondaryLabel || editingCard.label || 'Parola'}
+                        </span>
+                      </div>
+                    )}
+                    <span className="text-[9px] font-bold text-white line-clamp-1">
+                      {activeDeck.matchMode === 'identical'
+                        ? editingCard.label || 'Nome'
+                        : editingCard.secondaryLabel || editingCard.label || 'Parola'}
+                    </span>
+                  </div>
+                </div>
+
+                <span className="text-[10px] text-slate-400 mt-2 text-center">
+                  {activeDeck.matchMode === 'identical'
+                    ? 'Nel Memory appariranno 2 carte identiche da trovare sul tavolo.'
+                    : 'Nel Memory una carta mostrerà l\'immagine e l\'altra la parola corrispondente.'}
+                </span>
               </div>
             </div>
 
