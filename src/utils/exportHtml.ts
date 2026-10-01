@@ -618,7 +618,7 @@ export function generateStandaloneHtml(
           if (svg) {
             content = '<div class="card-icon">' + svg + '</div>';
           } else {
-            content = '<div class="card-icon"><span style="font-size:1.4rem;">⭐</span></div>';
+            content = '<div class="card-icon"><span style="font-size:1.8rem;line-height:1;">' + c.iconName + '</span></div>';
           }
         }
         const labelText = (c.isSecondary && DECK.matchMode === 'image_to_text' && c.secondaryLabel) ? c.secondaryLabel : c.label;
@@ -894,8 +894,12 @@ export function generateStandaloneHtml(
         let visualHtml = '';
         if (item.img) {
           visualHtml = '<img src="' + item.img + '" style="width:36px;height:36px;border-radius:6px;object-fit:cover;margin-right:8px;">';
-        } else if (item.iconName && ICONS[item.iconName]) {
-          visualHtml = '<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#f59e0b;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:4px;flex-shrink:0;margin-right:8px;">' + ICONS[item.iconName] + '</div>';
+        } else if (item.iconName) {
+          if (ICONS[item.iconName]) {
+            visualHtml = '<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#f59e0b;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:4px;flex-shrink:0;margin-right:8px;">' + ICONS[item.iconName] + '</div>';
+          } else {
+            visualHtml = '<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;background:#0f172a;border:1px solid #334155;border-radius:6px;flex-shrink:0;margin-right:8px;">' + item.iconName + '</div>';
+          }
         }
         el.innerHTML = visualHtml + '<span style="overflow:hidden;text-overflow:ellipsis;">' + item.label + '</span>';
         if (!item.matched) {
@@ -915,8 +919,12 @@ export function generateStandaloneHtml(
         let visualRightHtml = '';
         if (item.secondaryImg) {
           visualRightHtml = '<img src="' + item.secondaryImg + '" style="width:36px;height:36px;border-radius:6px;object-fit:cover;margin-right:8px;">';
-        } else if (item.secondaryIconName && ICONS[item.secondaryIconName]) {
-          visualRightHtml = '<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#f59e0b;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:4px;flex-shrink:0;margin-right:8px;">' + ICONS[item.secondaryIconName] + '</div>';
+        } else if (item.secondaryIconName) {
+          if (ICONS[item.secondaryIconName]) {
+            visualRightHtml = '<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;color:#f59e0b;background:#0f172a;border:1px solid #334155;border-radius:6px;padding:4px;flex-shrink:0;margin-right:8px;">' + ICONS[item.secondaryIconName] + '</div>';
+          } else {
+            visualRightHtml = '<div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:22px;line-height:1;background:#0f172a;border:1px solid #334155;border-radius:6px;flex-shrink:0;margin-right:8px;">' + item.secondaryIconName + '</div>';
+          }
         }
         el.innerHTML = visualRightHtml + '<span style="overflow:hidden;text-overflow:ellipsis;">' + item.label + '</span>';
         if (!item.matched) {

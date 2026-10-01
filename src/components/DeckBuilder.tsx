@@ -676,6 +676,111 @@ export function DeckBuilder({
                 {/* Icon categories & picker */}
                 {!editingCard.imageUrl && (
                   <>
+                    {/* Direct Keyboard Emoji Input */}
+                    <div className="mb-3 bg-slate-900/90 p-3 rounded-xl border border-slate-700/80 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-amber-300">
+                          ⌨️ Digita Emoji o Simbolo dalla Tastiera:
+                        </span>
+                        {editingCard.iconName && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playSound('click');
+                              setEditingCard({
+                                ...editingCard,
+                                iconName: '',
+                                imageUrl: undefined,
+                              });
+                            }}
+                            className="text-[11px] text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                            <span>Cancella</span>
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={
+                            editingCard.iconName && ICON_LIBRARY[editingCard.iconName]
+                              ? ''
+                              : (editingCard.iconName ?? '')
+                          }
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setEditingCard({
+                              ...editingCard,
+                              iconName: val,
+                              imageUrl: undefined,
+                            });
+                          }}
+                          placeholder={
+                            editingCard.iconName && ICON_LIBRARY[editingCard.iconName]
+                              ? `Icona attuale: "${ICON_LIBRARY[editingCard.iconName].label}". Digita qui un'emoji per cambiare...`
+                              : "Tocca qui e digita un'emoji (es. 🐶, 🍕, 🚀, ❤️, ⭐)..."
+                          }
+                          className="w-full bg-slate-800 text-white rounded-lg pl-3 pr-8 py-2 text-sm border border-slate-600 focus:outline-none focus:border-amber-400 font-medium"
+                        />
+                        {editingCard.iconName && !ICON_LIBRARY[editingCard.iconName] && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playSound('click');
+                              setEditingCard({
+                                ...editingCard,
+                                iconName: '',
+                                imageUrl: undefined,
+                              });
+                            }}
+                            title="Cancella emoji"
+                            className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Quick Popular Emojis */}
+                      <div>
+                        <span className="text-[10px] text-slate-400 block mb-1">
+                          Oppure tocca un'emoji rapida:
+                        </span>
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                          {['🐶', '🐱', '🦁', '🚀', '⚽', '🍕', '🍦', '🚗', '🌈', '⭐', '❤️', '🎁', '🦄', '🎨', '🎈', '👑', '🎸', '🍎'].map((emoji) => {
+                            const isSelected = !editingCard.imageUrl && editingCard.iconName === emoji;
+                            return (
+                              <button
+                                key={emoji}
+                                type="button"
+                                onClick={() => {
+                                  playSound('click');
+                                  setEditingCard({
+                                    ...editingCard,
+                                    iconName: emoji,
+                                    imageUrl: undefined,
+                                  });
+                                }}
+                                className={`w-8 h-8 shrink-0 text-lg flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-amber-500/30 border-amber-400 scale-110 shadow-sm ring-1 ring-amber-400'
+                                    : 'bg-slate-800 hover:bg-amber-500/20 border-slate-700 hover:border-amber-400'
+                                }`}
+                              >
+                                {emoji}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-[11px] font-bold text-slate-400 mb-1.5">
+                      Oppure scegli dalla libreria icone:
+                    </div>
+
                     <div className="flex items-center gap-1.5 overflow-x-auto pb-2 mb-2">
                       {availableCategories.map((cat) => (
                         <button

@@ -146,9 +146,22 @@ export function DynamicIcon({
   name?: string;
   className?: string;
 }) {
-  if (!name) return <Sparkles className={className} />;
+  if (!name || !name.trim()) {
+    return <Sparkles className={`${className} opacity-25`} />;
+  }
   const entry = ICON_LIBRARY[name];
-  if (!entry) return <Sparkles className={className} />;
-  const IconComponent = entry.icon;
-  return <IconComponent className={className} />;
+  if (entry) {
+    const IconComponent = entry.icon;
+    return <IconComponent className={className} />;
+  }
+
+  // Support direct keyboard-typed emoji, character, or symbol!
+  return (
+    <span
+      className={`inline-flex items-center justify-center font-bold select-none leading-none ${className}`}
+      style={{ fontSize: '1.35em' }}
+    >
+      {name}
+    </span>
+  );
 }

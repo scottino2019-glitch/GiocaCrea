@@ -561,19 +561,85 @@ export function CustomizePairsModal({
               <div className="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Smile className="w-4 h-4 text-amber-400" />
-                  Scegli Icona per la Coppia
+                  Scegli Icona o Digita con la Tastiera
                 </span>
-                <button
-                  onClick={() => setIconPickerTarget(null)}
-                  className="p-1 text-slate-400 hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (iconPickerTarget) {
+                        handleClearVisual(iconPickerTarget.pairIndex, iconPickerTarget.side);
+                        setIconPickerTarget(null);
+                      }
+                    }}
+                    className="text-[11px] text-rose-400 hover:text-rose-300 px-2 py-0.5 rounded hover:bg-rose-500/10 cursor-pointer"
+                  >
+                    Rimuovi Icona
+                  </button>
+                  <button
+                    onClick={() => setIconPickerTarget(null)}
+                    className="p-1 text-slate-400 hover:text-white"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Direct Keyboard Emoji Input */}
+              <div className="mb-3 bg-slate-950/80 p-2.5 rounded-xl border border-slate-700">
+                <span className="text-[11px] font-bold text-amber-300 block mb-1">
+                  ⌨️ Digita un'Emoji o Simbolo dalla Tastiera:
+                </span>
+                <div className="flex items-center gap-2 mb-2">
+                  <input
+                    type="text"
+                    id="customize-emoji-input"
+                    placeholder="Digita es. 🐶, 🍕, 🚀, ❤️, ⭐, A, 1..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const val = (e.target as HTMLInputElement).value.trim();
+                        if (val) handleSelectIcon(val);
+                      }
+                    }}
+                    className="flex-1 bg-slate-800 text-white rounded-lg px-3 py-1.5 text-sm border border-slate-600 focus:outline-none focus:border-amber-400 font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById('customize-emoji-input') as HTMLInputElement;
+                      if (input && input.value.trim()) {
+                        handleSelectIcon(input.value.trim());
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+                  >
+                    Usa Questa
+                  </button>
+                </div>
+
+                {/* Popular Emojis */}
+                <div>
+                  <span className="text-[10px] text-slate-400 block mb-1">
+                    Oppure tocca un'emoji rapida:
+                  </span>
+                  <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                    {['🐶', '🐱', '🦁', '🚀', '⚽', '🍕', '🍦', '🚗', '🌈', '⭐', '❤️', '🎁', '🦄', '🎨', '🎈', '👑', '🎸', '🍎'].map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => handleSelectIcon(emoji)}
+                        className="w-7 h-7 shrink-0 text-base flex items-center justify-center rounded-lg bg-slate-800 hover:bg-amber-500/20 border border-slate-700 hover:border-amber-400 transition-colors cursor-pointer"
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               <input
                 type="text"
-                placeholder="Cerca icona (es. stella, cane, libro...)"
+                placeholder="Oppure cerca nella libreria icone (es. stella, cane, libro...)"
                 value={iconSearchTerm}
                 onChange={(e) => setIconSearchTerm(e.target.value)}
                 className="w-full bg-slate-800 text-white rounded-lg px-3 py-1.5 text-xs border border-slate-700 mb-3 focus:outline-none focus:border-amber-400"

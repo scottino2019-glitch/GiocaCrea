@@ -140,26 +140,37 @@ export function QuickCreateMemoryModal({
     setActiveCardIndex(Math.max(0, index - 1));
   };
 
+  // Atomically update card fields for activeCardIndex
+  const updateCardFields = (updates: Partial<CardItem>) => {
+    setCards((prev) => {
+      const next = [...prev];
+      if (!next[activeCardIndex]) return prev;
+      next[activeCardIndex] = {
+        ...next[activeCardIndex],
+        ...updates,
+      };
+      return next;
+    });
+  };
+
   // Update card fields
   const handleUpdateCard = (field: keyof CardItem, value: any) => {
-    const updated = [...cards];
-    updated[activeCardIndex] = {
-      ...updated[activeCardIndex],
-      [field]: value,
-    };
-    setCards(updated);
+    updateCardFields({ [field]: value });
   };
 
   // Select icon
   const handleSelectIcon = (iconKey: string) => {
-    if (iconPickerIndex === null) return;
-    const updated = [...cards];
-    updated[iconPickerIndex] = {
-      ...updated[iconPickerIndex],
-      iconName: iconKey,
-      imageUrl: undefined,
-    };
-    setCards(updated);
+    const targetIdx = iconPickerIndex !== null ? iconPickerIndex : activeCardIndex;
+    setCards((prev) => {
+      const next = [...prev];
+      if (!next[targetIdx]) return prev;
+      next[targetIdx] = {
+        ...next[targetIdx],
+        iconName: iconKey,
+        imageUrl: undefined,
+      };
+      return next;
+    });
     setIconPickerIndex(null);
     playSound('click');
   };
@@ -184,6 +195,7 @@ export function QuickCreateMemoryModal({
         ...c,
         label: c.label.trim() || `Elemento ${idx + 1}`,
         secondaryLabel: c.secondaryLabel?.trim() || c.label.trim(),
+        iconName: (!c.imageUrl && (!c.iconName || !c.iconName.trim())) ? 'Sparkles' : c.iconName,
       })),
       isBuiltIn: false,
       category: 'I Miei Giochi',
@@ -519,11 +531,130 @@ export function QuickCreateMemoryModal({
                 </div>
               )}
 
-              {/* Visual chooser buttons */}
-              <div>
-                <label className="text-xs font-semibold text-slate-300 block mb-1.5">
+              {/* Visual chooser buttons & Keyboard typing */}
+              <div className="space-y-2.5">
+                <label className="text-xs font-semibold text-slate-300 block">
                   Immagine o Icona per questa carta
                 </label>
+
+                {/* If card has image, show image info and removal */}
+                {currentEditingCard.imageUrl ? (
+                  <div className="flex items-center justify-between p-2.5 bg-slate-900 border border-slate-700 rounded-xl">
+                    <div className="flex items-center gap-2.5">
+                      <img
+                        src={currentEditingCard.imageUrl}
+                        alt=""
+                        className="w-10 h-10 object-cover rounded-lg border border-slate-700"
+                      />
+                      <div>
+                        <span className="text-xs font-bold text-white block">Foto Caricata Attiva</span>
+                        <span className="text-[10px] text-slate-400">Questa carta visualizza una foto</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playSound('click');
+                        updateCardFields({ imageUrl: undefined, iconName: 'Sparkles' });
+                      }}
+                      className="text-xs text-rose-400 hover:text-rose-300 px-2.5 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-lg cursor-pointer transition-colors"
+                    >
+                      Rimuovi Foto
+                    </button>
+                  </div>
+                ) : (
+                  /* Emoji / Text Symbol Keyboard Input Box */
+                  <div className="bg-slate-900/90 p-3 rounded-xl border border-slate-700/80 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                        <span>⌨️ Digita Emoji o Simbolo dalla Tastiera:</span>
+                      </span>
+                      {currentEditingCard.iconName && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playSound('click');
+                            updateCardFields({ iconName: '', imageUrl: undefined });
+                          }}
+                          className="text-[11px] text-rose-400 hover:text-rose-300 flex items-center gap-1 cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          <span>Cancella</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={
+                          currentEditingCard.iconName && ICON_LIBRARY[currentEditingCard.iconName]
+                            ? ''
+                            : (currentEditingCard.iconName ?? '')
+                        }
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          updateCardFields({
+                            iconName: val,
+                            imageUrl: undefined,
+                          });
+                        }}
+                        placeholder={
+                          currentEditingCard.iconName && ICON_LIBRARY[currentEditingCard.iconName]
+                            ? `Icona attuale: "${ICON_LIBRARY[currentEditingCard.iconName].label}". Digita qui un'emoji per cambiare...`
+                            : "Tocca qui e digita un'emoji (es. 🐶, 🍕, 🚀, ❤️, ⭐)..."
+                        }
+                        className="w-full bg-slate-800 text-white rounded-lg pl-3 pr-8 py-2 text-sm border border-slate-600 focus:outline-none focus:border-amber-400 font-medium"
+                      />
+                      {currentEditingCard.iconName && !ICON_LIBRARY[currentEditingCard.iconName] && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playSound('click');
+                            updateCardFields({ iconName: '', imageUrl: undefined });
+                          }}
+                          title="Cancella emoji"
+                          className="absolute right-2.5 top-2.5 text-slate-400 hover:text-white cursor-pointer"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Quick Popular Emojis Bar */}
+                    <div>
+                      <span className="text-[10px] text-slate-400 block mb-1">
+                        Oppure tocca un'emoji rapida:
+                      </span>
+                      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                        {['🐶', '🐱', '🦁', '🚀', '⚽', '🍕', '🍦', '🚗', '🌈', '⭐', '❤️', '🎁', '🦄', '🎨', '🎈', '👑', '🎸', '🍎'].map((emoji) => {
+                          const isSelected = !currentEditingCard.imageUrl && currentEditingCard.iconName === emoji;
+                          return (
+                            <button
+                              key={emoji}
+                              type="button"
+                              onClick={() => {
+                                playSound('click');
+                                updateCardFields({
+                                  iconName: emoji,
+                                  imageUrl: undefined,
+                                });
+                              }}
+                              className={`w-8 h-8 shrink-0 text-lg flex items-center justify-center rounded-lg border transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-amber-500/30 border-amber-400 scale-110 shadow-sm ring-1 ring-amber-400'
+                                  : 'bg-slate-800 hover:bg-amber-500/20 border-slate-700 hover:border-amber-400'
+                              }`}
+                            >
+                              {emoji}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
@@ -540,7 +671,7 @@ export function QuickCreateMemoryModal({
                     className="flex items-center justify-center gap-1.5 py-2 px-3 bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
                   >
                     <Smile className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Scegli Icona</span>
+                    <span>Libreria Icone</span>
                   </button>
                 </div>
               </div>
@@ -579,7 +710,7 @@ export function QuickCreateMemoryModal({
               <div className="flex items-center justify-between pb-2 mb-3 border-b border-slate-800">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
                   <Smile className="w-4 h-4 text-amber-400" />
-                  Scegli Icona per la Carta
+                  Scegli Icona o Digita con la Tastiera
                 </span>
                 <button
                   onClick={() => setIconPickerIndex(null)}
@@ -589,9 +720,42 @@ export function QuickCreateMemoryModal({
                 </button>
               </div>
 
+              {/* Direct Emoji Input */}
+              <div className="mb-3 bg-slate-950/80 p-2.5 rounded-xl border border-slate-700">
+                <span className="text-[11px] font-bold text-amber-300 block mb-1">
+                  ⌨️ Digita un'Emoji o Carattere dalla Tastiera:
+                </span>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    id="picker-emoji-input"
+                    placeholder="Digita es. 🐶, 🍕, 🚀, ❤️, 7, A..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        const val = (e.target as HTMLInputElement).value.trim();
+                        if (val) handleSelectIcon(val);
+                      }
+                    }}
+                    className="flex-1 bg-slate-800 text-white rounded-lg px-3 py-1.5 text-sm border border-slate-600 focus:outline-none focus:border-amber-400 font-medium"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const input = document.getElementById('picker-emoji-input') as HTMLInputElement;
+                      if (input && input.value.trim()) {
+                        handleSelectIcon(input.value.trim());
+                      }
+                    }}
+                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition-colors cursor-pointer"
+                  >
+                    Usa Questa
+                  </button>
+                </div>
+              </div>
+
               <input
                 type="text"
-                placeholder="Cerca icona (es. stella, cuore, sole, cane...)"
+                placeholder="Oppure cerca nella libreria icone (es. stella, cuore, sole...)"
                 value={iconSearchTerm}
                 onChange={(e) => setIconSearchTerm(e.target.value)}
                 className="w-full bg-slate-800 text-white rounded-lg px-3 py-1.5 text-xs border border-slate-700 mb-3 focus:outline-none focus:border-amber-400"
